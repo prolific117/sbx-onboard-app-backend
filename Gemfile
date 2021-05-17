@@ -30,6 +30,8 @@ gem 'envyable'
 
 gem 'gocardless_pro'
 
+gem 'json-schema'
+
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 

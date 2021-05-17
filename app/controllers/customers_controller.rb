@@ -6,6 +6,14 @@ class CustomersController < ApplicationController
   def create
     respond_to :json
     json = JSON.parse(request.body.read)
+    schema = addCustomerSchema()
+
+    begin
+      JSON::Validator.validate!(schema, json)
+    rescue JSON::Schema::ValidationError => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
+
     account = current_user
 
     existingCustomer = Customer.where('account_id = ? and email = ?', account['id'], json['email']).first
@@ -20,7 +28,7 @@ class CustomersController < ApplicationController
       company_name: json['company_name'],
       email: json['email'],
       phone: json['phone'],
-      currency: json['currency'],
+      currency: "GBP",
       account_id: account['id']
     );
 
@@ -33,6 +41,23 @@ class CustomersController < ApplicationController
 
     output = {'message' => 'Success'}.to_json
     render json: output
+  end
+
+  def addCustomerSchema
+    return {
+      "type" => "object",
+      "required" => %w[first_name last_name company_name email phone address_line city postal_code],
+      "properties" => {
+        "first_name" => {"type" => "string"},
+        "last_name" => {"type" => "string"},
+        "company_name" => {"type" => "string"},
+        "email" => {"type" => "string"},
+        "phone" => {"type" => "string"},
+        "address_line" => {"type" => "string"},
+        "city" => {"type" => "string"},
+        "postal_code" => {"type" => "string"}
+      }
+    }
   end
 
   def get

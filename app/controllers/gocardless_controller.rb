@@ -136,6 +136,13 @@ class GocardlessController < ApplicationController
   def addCustomerToGocardless()
     respond_to :json
     json = JSON.parse(request.body.read)
+    schema = mandateSetupSchema()
+
+    begin
+      JSON::Validator.validate!(schema, json)
+    rescue JSON::Schema::ValidationError => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     account = current_user
 
@@ -184,10 +191,37 @@ class GocardlessController < ApplicationController
     render json: output
   end
 
+  def mandateSetupSchema
+    return {
+      "type" => "object",
+      "required" => %w[customer_id],
+      "properties" => {
+        "customer_id" => {"type" => "integer"},
+      }
+    }
+  end
+
+  def mandateCompleteSchema
+    return {
+      "type" => "object",
+      "required" => %w[customer_id redirect_flow_id],
+      "properties" => {
+        "customer_id" => {"type" => "integer"},
+        "redirect_flow_id" => {"type" => "string"}
+      }
+    }
+  end
 
   def completeGocardlessMandate()
     respond_to :json
     json = JSON.parse(request.body.read)
+    schema = mandateCompleteSchema()
+
+    begin
+      JSON::Validator.validate!(schema, json)
+    rescue JSON::Schema::ValidationError => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     account = current_user
     if(!canPerformGCOperations(account))

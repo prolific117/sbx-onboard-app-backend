@@ -2,10 +2,17 @@ class UsersController < ApplicationController
   def signup
     respond_to :json
     json = JSON.parse(request.body.read)
+    schema = signupSchema()
+
+    begin
+      JSON::Validator.validate!(schema, json)
+    rescue JSON::Schema::ValidationError => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     existingUser = User.find_by(email: json['email'])
     if(!existingUser.nil?)
-      output = {'message' => 'Email Already Exists'}.to_json
+      output = {'message' => 'Email already exists'}.to_json
       render json: output, :status => :bad_request and return
     end
 
@@ -25,9 +32,31 @@ class UsersController < ApplicationController
     render json: output
   end
 
+  def signupSchema
+    return {
+      "type" => "object",
+      "required" => %w[first_name last_name company_name email password],
+      "properties" => {
+        "first_name" => {"type" => "string"},
+        "last_name" => {"type" => "string"},
+        "company_name" => {"type" => "string"},
+        "email" => {"type" => "string"},
+        "password" => {"type" => "string"}
+      }
+    }
+  end
+
   def login
     respond_to :json
     json = JSON.parse(request.body.read)
+    schema = loginSchema()
+
+    begin
+      JSON::Validator.validate!(schema, json)
+    rescue JSON::Schema::ValidationError => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
+
     user = User.find_by(email: json['email'])
 
     if user && user.authenticate(json['password'])
@@ -41,4 +70,16 @@ class UsersController < ApplicationController
       render json: output, :status => :bad_request
     end
   end
+
+  def loginSchema
+    return {
+      "type" => "object",
+      "required" => %w[email password],
+      "properties" => {
+        "email" => {"type" => "string"},
+        "password" => {"type" => "string"}
+      }
+    }
+  end
 end
+
