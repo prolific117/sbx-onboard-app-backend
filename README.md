@@ -1,24 +1,30 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Set up Ruby, Postgres and Github on local env and install necessary gems. follow instructions here - https://gocardless.atlassian.net/wiki/spaces/TE/pages/1142522761/Environment+Setup
 
-Things you may want to cover:
+Pull code, change to develop / branch off develop
 
-* Ruby version
+Modify database creds in config/database/yml
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
+cd into root folder 
+   Run 'bundle install' to install dependencies
+   
 * Database initialization
+   Run 'bin/rails server' to start app
+   
+   Run 'bin/rails db:migrate' to run migrations    
 
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
+* How to use app
+  
+  Acess endpoints on localhost:3000
 
 * Deployment instructions
-
-* ...
+cd into root folder
+  Run 'heroku git:remote -a fathomless-temple-12276' to connect with existing app
+  
+  Run 'heroku config:set RAILS_ENV=test' to set environment to test on heroku
+  
+  Run 'git push heroku your-branch:master' to deploy to rails 
+  
+  Run 'heroku run rake db:migrate' to run migrations on heroku
+  
