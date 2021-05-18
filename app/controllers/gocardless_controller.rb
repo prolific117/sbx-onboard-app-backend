@@ -82,11 +82,14 @@ class GocardlessController < ApplicationController
                     organisation_id: access_token['organisation_id'],
                     is_verified: false)
 
+    #Send email to verify here
+    VerifyMailer.with(user: account, url: 'https://verify-sandbox.gocardless.com').verify_email.deliver_now
+
     output = {'organisation_id' => access_token['organisation_id']}.to_json
     render json: output
   end
 
-  def verifyAccountAndUpdate()
+  def getCurrentVerificationStatus()
     account = current_user
 
     client = GoCardlessPro::Client.new(
@@ -98,10 +101,10 @@ class GocardlessController < ApplicationController
 
     if creditor.verification_status == "successful"
       account.update!(is_verified: true)
+      return true
     end
 
-    output = {'verification_status' => creditor.verification_status}.to_json
-    render json: output
+    return false
   end
 
   def getMandatesForCustomer
@@ -112,7 +115,7 @@ class GocardlessController < ApplicationController
       render json: output, :status => :bad_request and return
     end
 
-    customer = Customer.find_by(id: json['customer_id'])
+    customer = Customer.find_by(id: params['customer_id'])
     if(customer.nil?)
       output = {'message' => 'Customer does not exist'}.to_json
       render json: output, :status => :not_found and return
@@ -128,9 +131,21 @@ class GocardlessController < ApplicationController
       environment: :sandbox
     )
 
-    @client.mandates.list(params: { customer: "CU000FRXY66HG3" })
+    records = @client.mandates.list(params: { customer: "CU000FRXY66HG3" }).records
 
-    render json: @client.mandates.list(params: { customer: "CU000FRXY66HG3" }).records
+    mandates = []
+    records.each do |record|
+      mandates.push({
+                      'mandate_id' => record.id,
+                      'created_at' => record.created_at,
+                      'scheme' => record.scheme,
+                      'status' => record.status,
+                      'reference' => record.reference
+                    }
+      )
+    end
+
+    render json: mandates and return
   end
 
   def addCustomerToGocardless()
@@ -273,12 +288,18 @@ class GocardlessController < ApplicationController
 
   def getConnectionState()
     account = current_user
-
     output = {
       'is_authorized' => account['access_token'].nil? ?  :false : :true,
       'is_verified' => account['is_verified']
-    }.to_json
+    }
 
-    render json: output
+    if (!account['access_token'].nil? && account['is_verified'].nil? or account['is_verified'] == false)
+      #check with api
+      output['is_verified'] = getCurrentVerificationStatus
+    else
+      output['is_verified'] = true
+    end
+
+    render json: output.to_json
   end
 end

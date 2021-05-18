@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   post "/customer", to: "customers#create"
-  get "/customers", to: "customers#get"
+  #get "/customers", to: "customers#get"
+  get "/cors", to: "gocardless#get"
   post "/login", to: "users#login"
   match '/user' => 'users#signup', via: :post
   get 'authorized', to: 'sessions#page_requires_login'
@@ -8,8 +9,6 @@ Rails.application.routes.draw do
   get "/gocardless/authorize/login", to: "gocardless#gcLogin"
   get "/gocardless/connect/:code", to: "gocardless#connect"
   get "/gocardless/state", to: "gocardless#getConnectionState"
-  get "/gocardless/state", to: "gocardless#getConnectionState"
-  get "/gocardless/verify", to: "gocardless#verifyAccountAndUpdate"
   post "/gocardless/customer", to: "gocardless#addCustomerToGocardless"
   post "/gocardless/complete-mandate", to: "gocardless#completeGocardlessMandate"
   get "/gocardless/mandates/:customer_id", to: "gocardless#getMandatesForCustomer"
