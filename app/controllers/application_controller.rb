@@ -3,7 +3,9 @@ class ApplicationController < ActionController::Base
 
   def current_user
     @authorization = request.headers["Authorization"]
-    User.find_by(id: session[@authorization])
+    @authorization = request.headers["Authorization"]
+    session = Session.find_by(session_id: @authorization)
+    User.find_by(id: session.user_id)
   end
 
   def logged_in?
@@ -35,11 +37,7 @@ class ApplicationController < ActionController::Base
   end
 
   def authorized
-    @authorization = request.headers["Authorization"]
-    session = Session.find_by(session_id: @authorization)
-    user = User.find_by(id: session.user_id)
-
-    output = {'message' => 'Unauthorized', 'header' => request.headers["Authorization"], 'user' => user}.to_json
-    render json: output, :status => :unauthorized
+    output = {'message' => 'Unauthorized'}.to_json
+    render json: output, :status => :unauthorized unless logged_in?
   end
 end
