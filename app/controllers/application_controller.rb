@@ -35,7 +35,10 @@ class ApplicationController < ActionController::Base
   end
 
   def authorized
-    output = {'message' => 'Unauthorized', 'header' => request.headers["Authorization"]}.to_json
-    render json: output, :status => :unauthorized unless logged_in?
+    @authorization = request.headers["Authorization"]
+    user = User.find_by(id: session[@authorization])
+
+    output = {'message' => 'Unauthorized', 'header' => request.headers["Authorization"], 'user' => user}.to_json
+    render json: output, :status => :unauthorized
   end
 end
