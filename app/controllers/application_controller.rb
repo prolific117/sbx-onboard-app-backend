@@ -5,7 +5,9 @@ class ApplicationController < ActionController::Base
     @authorization = request.headers["Authorization"]
     @authorization = request.headers["Authorization"]
     session = Session.find_by(session_id: @authorization)
-    User.find_by(id: session.user_id)
+    if (!session.nil?)
+      User.find_by(id: session.user_id)
+    end
   end
 
   def logged_in?

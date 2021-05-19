@@ -109,7 +109,7 @@ class GocardlessController < ApplicationController
       environment: :sandbox
     )
 
-    records = @client.mandates.list(params: { customer: "CU000FRXY66HG3" }).records
+    records = @client.mandates.list(params: { customer: customer['gocardless_customer_id'] }).records
 
     mandates = []
     records.each do |record|
