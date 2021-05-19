@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   #get "/customers", to: "customers#get"
   get "/cors", to: "gocardless#get"
   post "/login", to: "users#login"
-  match '/user' => 'users#signup', via: :post
+  post '/user', to: 'users#signup'
   get 'authorized', to: 'sessions#page_requires_login'
   get "/gocardless/authorize/signup", to: "gocardless#gcSignup"
   get "/gocardless/authorize/login", to: "gocardless#gcLogin"
