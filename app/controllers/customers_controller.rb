@@ -67,6 +67,11 @@ class CustomersController < ApplicationController
 
     account = current_user
 
+    if(json['amount'] < 200)
+      output = {'message' => 'Minimum amount is 200 pence'}.to_json
+      render json: output, :status => :bad_request and return
+    end
+
     if(!canPerformGCOperations(account))
       output = {'message' => 'Account cannot add users, please authorize with Gocardless and Complete Verification'}.to_json
       render json: output, :status => :bad_request and return
@@ -84,11 +89,17 @@ class CustomersController < ApplicationController
     end
 
     mandate = Mandate.where('customer_id = ?', customer['id']).first
+    if(mandate.nil?)
+      output = {'message' => 'No mandates exist for customer'}.to_json
+      render json: output, :status => :not_found and return
+    end
+
     client = GoCardlessPro::Client.new(
-      access_token: current_user.gocardless_access_token,
+      access_token: account['access_token'],
       environment: :sandbox
     )
 
+    invoice_number = rand.to_s[2..10]
     payment = client.payments.create(
       params: {
         amount: json['amount'], # 10 GBP in pence, collected from the end customer.
@@ -101,15 +112,26 @@ class CustomersController < ApplicationController
         # Almost all resources in the API let you store custom metadata,
         # which you can retrieve later
         metadata: {
-          invoice_number: rand.to_s[2..10]
+          invoice_number: invoice_number
         }
       },
       headers: {
-        'Idempotency-Key' => 'random_payment_specific_string'
+        'Idempotency-Key' => rand(36**32).to_s(36)
       }
     )
 
-    puts "ID: #{payment.id}"
+    Payment.create(
+      mandate_id: mandate['id'],
+      status: 'pending_submission',
+      amount: json['amount'],
+      customer_id: customer['id'],
+      invoice_number: invoice_number,
+      payment_id: payment.id,
+      payment_type: 'one-off'
+    );
+
+    output = {'payment_id' => payment.id}.to_json
+    render json: output
   end
 
   def addCustomerSchema

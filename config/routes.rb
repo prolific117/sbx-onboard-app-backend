@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   get "/cors", to: "gocardless#get"
   post "/login", to: "users#login"
   post '/user', to: 'users#signup'
-  post '/customer/single-payment/:customer_id', to: 'customer#collectOneOffPayment'
+  post '/customer/single-payment/:customer_id', to: 'customers#collectOneOffPayment'
   get 'authorized', to: 'sessions#page_requires_login'
   get "/gocardless/authorize/signup", to: "gocardless#gcSignup"
   get "/gocardless/authorize/login", to: "gocardless#gcLogin"

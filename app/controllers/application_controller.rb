@@ -10,6 +10,22 @@ class ApplicationController < ActionController::Base
     !current_user.nil?
   end
 
+  def isAuthorized(account)
+    if(account['access_token'].nil?)
+      return false
+    end
+
+    return true
+  end
+
+  def isVerified(account)
+    if(account['is_verified'].nil? or account['is_verified'] == false)
+      return false
+    end
+
+    return true
+  end
+
   def canPerformGCOperations(account)
     if(!isAuthorized(account) or !isVerified(account))
       return false

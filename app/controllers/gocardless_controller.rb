@@ -44,22 +44,6 @@ class GocardlessController < ApplicationController
     )
   end
 
-  def isAuthorized(account)
-    if(account['access_token'].nil?)
-      return false
-    end
-
-    return true
-  end
-
-  def isVerified(account)
-    if(account['is_verified'].nil? or account['is_verified'] == false)
-      return false
-    end
-
-    return true
-  end
-
   def connect()
     output = {'organisation_id' => access_token['organisation_id']}.to_json
     render json: output and return
