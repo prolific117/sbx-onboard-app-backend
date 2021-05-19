@@ -12,7 +12,7 @@ use Rack::Cors do
   allow do
     origins '*'
     resource '*',
-             :headers => :any,
+             :headers => 'Authorization',
              :methods => [:get, :post, :delete, :put, :options]
   end
 end
