@@ -13,6 +13,6 @@ use Rack::Cors do
     origins '*'
     resource '*',
              :headers => 'Authorization',
-             :methods => [:get, :post, :delete, :put, :options]
+             :methods => [:get, :post, :delete, :patch, :options]
   end
 end

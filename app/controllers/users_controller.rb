@@ -26,7 +26,12 @@ class UsersController < ApplicationController
     );
 
     sessionId = rand(36**16).to_s(36)
-    session[sessionId] = user.id
+    #session[sessionId] = user.id
+    Session.create(
+      session_id: sessionId,
+      user_id: user.id
+    );
+
 
     output = {'session_id' => sessionId}.to_json
     render json: output
@@ -61,7 +66,11 @@ class UsersController < ApplicationController
 
     if user && user.authenticate(json['password'])
       sessionId = rand(36**32).to_s(36)
-      session[sessionId] = user.id
+      #session[sessionId] = user.id
+      Session.create(
+        session_id: sessionId,
+        user_id: user.id
+      );
 
       output = {'session_id' => sessionId}.to_json
       render json: output
