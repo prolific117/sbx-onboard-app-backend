@@ -282,10 +282,15 @@ class GocardlessController < ApplicationController
 
   def getConnectionState()
     account = current_user
-    output = {
-      'is_authorized' => account['access_token'].nil? ?  :false : :true,
-      'is_verified' => account['is_verified']
-    }
+    if (account['access_token'].nil?)
+      output = {
+        'is_authorized' => account['access_token'].nil? ?  :false : :true,
+        'is_verified' => account['is_verified']
+      }
+
+      render json: output.to_json and return
+    end
+
 
     if (!account['access_token'].nil? && account['is_verified'].nil? or account['is_verified'] == false)
       #check with api
