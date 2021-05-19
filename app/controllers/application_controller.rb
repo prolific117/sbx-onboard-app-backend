@@ -11,6 +11,14 @@ class ApplicationController < ActionController::Base
     !current_user.nil?
   end
 
+  def canPerformGCOperations(account)
+    if(!isAuthorized(account) or !isVerified(account))
+      return false
+    end
+
+    return true
+  end
+
   def authorized
     output = {'message' => 'Unauthorized'}.to_json
     render json: output, :status => :unauthorized unless logged_in?

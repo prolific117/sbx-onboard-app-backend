@@ -43,6 +43,75 @@ class CustomersController < ApplicationController
     render json: output
   end
 
+
+  def singlePaymentSchema
+    return {
+      "type" => "object",
+      "required" => %w[amount],
+      "properties" => {
+        "amount" => {"type" => "integer"}
+      }
+    }
+  end
+
+  def collectOneOffPayment
+    respond_to :json
+    json = JSON.parse(request.body.read)
+    schema = singlePaymentSchema()
+
+    begin
+      JSON::Validator.validate!(schema, json)
+    rescue JSON::Schema::ValidationError => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
+
+    account = current_user
+
+    if(!canPerformGCOperations(account))
+      output = {'message' => 'Account cannot add users, please authorize with Gocardless and Complete Verification'}.to_json
+      render json: output, :status => :bad_request and return
+    end
+
+    customer = Customer.find_by(id: params['customer_id'])
+    if(customer.nil?)
+      output = {'message' => 'Customer does not exist'}.to_json
+      render json: output, :status => :not_found and return
+    end
+
+    if(customer['account_id'] != account['id'])
+      output = {'message' => 'You are not allowed to perform this operation'}.to_json
+      render json: output, :status => :unauthorized and return
+    end
+
+    mandate = Mandate.where('customer_id = ?', customer['id']).first
+    client = GoCardlessPro::Client.new(
+      access_token: current_user.gocardless_access_token,
+      environment: :sandbox
+    )
+
+    payment = client.payments.create(
+      params: {
+        amount: json['amount'], # 10 GBP in pence, collected from the end customer.
+        app_fee: 10, # 10 pence, to be paid out to you.
+        currency: 'GBP',
+        links: {
+          mandate: mandate.mandate
+          # The mandate ID from last section
+        },
+        # Almost all resources in the API let you store custom metadata,
+        # which you can retrieve later
+        metadata: {
+          invoice_number: rand.to_s[2..10]
+        }
+      },
+      headers: {
+        'Idempotency-Key' => 'random_payment_specific_string'
+      }
+    )
+
+    puts "ID: #{payment.id}"
+  end
+
   def addCustomerSchema
     return {
       "type" => "object",

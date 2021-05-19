@@ -1,9 +1,10 @@
 Rails.application.routes.draw do
   post "/customer", to: "customers#create"
-  #get "/customers", to: "customers#get"
+  get "/customers", to: "customers#get"
   get "/cors", to: "gocardless#get"
   post "/login", to: "users#login"
   post '/user', to: 'users#signup'
+  post '/customer/single-payment/:customer_id', to: 'customer#collectOneOffPayment'
   get 'authorized', to: 'sessions#page_requires_login'
   get "/gocardless/authorize/signup", to: "gocardless#gcSignup"
   get "/gocardless/authorize/login", to: "gocardless#gcLogin"
@@ -12,7 +13,7 @@ Rails.application.routes.draw do
   post "/gocardless/customer", to: "gocardless#addCustomerToGocardless"
   post "/gocardless/complete-mandate", to: "gocardless#completeGocardlessMandate"
   get "/gocardless/mandates/:customer_id", to: "gocardless#getMandatesForCustomer"
-  match '/user' => 'gocardless#connect', via: :get
+  # match '/user' => 'gocardless#connect', via: :get
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 end
 

@@ -60,14 +60,6 @@ class GocardlessController < ApplicationController
     return true
   end
 
-  def canPerformGCOperations(account)
-    if(!isAuthorized(account) or !isVerified(account))
-      return false
-    end
-
-    return true
-  end
-
   def connect()
     output = {'organisation_id' => access_token['organisation_id']}.to_json
     render json: output and return
