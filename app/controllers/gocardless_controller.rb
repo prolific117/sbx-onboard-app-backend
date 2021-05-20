@@ -11,6 +11,27 @@ class GocardlessController < ApplicationController
     authorize('read_only')
   end
 
+  def mandateSetupSchema
+    return {
+      "type" => "object",
+      "required" => %w[customer_id],
+      "properties" => {
+        "customer_id" => {"type" => "integer"},
+      }
+    }
+  end
+
+  def mandateCompleteSchema
+    return {
+      "type" => "object",
+      "required" => %w[customer_id redirect_flow_id],
+      "properties" => {
+        "customer_id" => {"type" => "integer"},
+        "redirect_flow_id" => {"type" => "string"}
+      }
+    }
+  end
+
   def authorize(mode)
     account = current_user
     if(isAuthorized(account))
@@ -51,10 +72,14 @@ class GocardlessController < ApplicationController
 
     oauth = getClient()
 
-    access_token = oauth.auth_code.get_token(
-      params[:code],
-      redirect_uri: ENV['REDIRECT_URL']
-    )
+    begin
+      access_token = oauth.auth_code.get_token(
+        params[:code],
+        redirect_uri: ENV['REDIRECT_URL']
+      )
+    rescue => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     account.update!(access_token: access_token.token,
                     organisation_id: access_token['organisation_id'],
@@ -109,7 +134,11 @@ class GocardlessController < ApplicationController
       environment: :sandbox
     )
 
-    records = @client.mandates.list(params: { customer: customer['gocardless_customer_id'] }).records
+    begin
+      records = @client.mandates.list(params: { customer: customer['gocardless_customer_id'] }).records
+    rescue => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     mandates = []
     records.each do |record|
@@ -161,48 +190,36 @@ class GocardlessController < ApplicationController
       environment: :sandbox
     )
 
-    sessionId = "cust-#{rand(36**32).to_s(36)}"
-    session["mandate-session-#{customer['id']}"] = sessionId
+    sessionToken = "cust-#{rand(36**32).to_s(36)}"
+    session["mandate-session-#{customer['id']}"] = sessionToken
+    MandateSessionToken.create(
+      mandate_session_token: sessionToken,
+      customer_id: customer['id'],
+      active: true
+    );
 
-    redirect_flow = client.redirect_flows.create(
-      params: {
-        description: "Automatic invoice payments to #{customer['company_name']}",
-        session_token: sessionId,
-        success_redirect_url: "http://localhost:5000/mandate?user_id=#{customer['id']}",
-        prefilled_customer: {
-          given_name: customer.first_name,
-          family_name: customer.last_name,
-          email: customer.email,
-          address_line1: address['address_line'],
-          city: address['city'],
-          postal_code: address['postal_code']
+    begin
+      redirect_flow = client.redirect_flows.create(
+        params: {
+          description: "Automatic invoice payments to #{customer['company_name']}",
+          session_token: sessionToken,
+          success_redirect_url: "http://localhost:5000/mandate?user_id=#{customer['id']}",
+          prefilled_customer: {
+            given_name: customer.first_name,
+            family_name: customer.last_name,
+            email: customer.email,
+            address_line1: address['address_line'],
+            city: address['city'],
+            postal_code: address['postal_code']
+          }
         }
-      }
-    )
+      )
+    rescue => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
-    output = {'redirect_url' => redirect_flow.redirect_url, "session_token" => sessionId}.to_json
+    output = {'redirect_url' => redirect_flow.redirect_url, "session_token" => sessionToken}.to_json
     render json: output
-  end
-
-  def mandateSetupSchema
-    return {
-      "type" => "object",
-      "required" => %w[customer_id],
-      "properties" => {
-        "customer_id" => {"type" => "integer"},
-      }
-    }
-  end
-
-  def mandateCompleteSchema
-    return {
-      "type" => "object",
-      "required" => %w[customer_id redirect_flow_id],
-      "properties" => {
-        "customer_id" => {"type" => "integer"},
-        "redirect_flow_id" => {"type" => "string"}
-      }
-    }
   end
 
   def completeGocardlessMandate()
@@ -238,22 +255,30 @@ class GocardlessController < ApplicationController
       render json: output, :status => :unauthorized and return
     end
 
-    sessionId = session["mandate-session-#{json['customer_id']}"]
+    sessionToken = MandateSessionToken.where('customer_id = ?', customer['id']).where('active', true).order('created_at DESC').first
 
-    if (sessionId.nil?)
+    if (sessionToken.nil?)
       output = {'message' => 'Session token does not exist or expired'}.to_json
       render json: output, :status => :bad_request and return
     end
 
-    redirect_flow = client.redirect_flows.complete(
-      json['redirect_flow_id'], # The value of the `redirect_flow_id` query parameter
-      params: { session_token: sessionId }) # The session token you specified earlier
+    sessionId = sessionToken['mandate_session_token']
+
+    begin
+      redirect_flow = client.redirect_flows.complete(
+        json['redirect_flow_id'], # The value of the `redirect_flow_id` query parameter
+        params: { session_token: sessionId }) # The session token you specified earlier
+    rescue => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     Mandate.create(
       customer_id: json['customer_id'],
       status: 'pending_submission',
       mandate: redirect_flow.links.mandate
     );
+
+    sessionToken.update!(active: false)
 
     customer.update!(gocardless_customer_id: redirect_flow.links.customer)
 

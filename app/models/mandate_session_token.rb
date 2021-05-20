@@ -1,0 +1,2 @@
+class MandateSessionToken < ApplicationRecord
+end

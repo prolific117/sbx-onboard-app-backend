@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_19_143728) do
+ActiveRecord::Schema.define(version: 2021_05_20_101301) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -37,6 +37,14 @@ ActiveRecord::Schema.define(version: 2021_05_19_143728) do
     t.string "gocardless_customer_id"
   end
 
+  create_table "mandate_session_tokens", force: :cascade do |t|
+    t.string "mandate_session_token"
+    t.integer "customer_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.boolean "active"
+  end
+
   create_table "mandates", force: :cascade do |t|
     t.integer "customer_id"
     t.string "mandate"
@@ -55,8 +63,8 @@ ActiveRecord::Schema.define(version: 2021_05_19_143728) do
     t.string "invoice_number"
     t.string "payment_id"
     t.string "payment_type"
-    t.string "subcription_id"
-    t.integer "interval"
+    t.string "subscription_id"
+    t.string "interval"
     t.integer "day_of_month"
   end
 

@@ -122,22 +122,26 @@ class CustomersController < ApplicationController
     )
 
     invoice_number = rand.to_s[2..10]
-    payment = client.payments.create(
-      params: {
-        amount: json['amount'], # 10 GBP in pence, collected from the end customer.
-        app_fee: 10, # 10 pence, to be paid out to you.
-        currency: 'GBP',
-        links: {
-          mandate: mandate.mandate
+    begin
+      payment = client.payments.create(
+        params: {
+          amount: json['amount'], # 10 GBP in pence, collected from the end customer.
+          app_fee: 10, # 10 pence, to be paid out to you.
+          currency: 'GBP',
+          links: {
+            mandate: mandate.mandate
+          },
+          metadata: {
+            invoice_number: invoice_number
+          }
         },
-        metadata: {
-          invoice_number: invoice_number
+        headers: {
+          'Idempotency-Key' => rand(36**32).to_s(36)
         }
-      },
-      headers: {
-        'Idempotency-Key' => rand(36**32).to_s(36)
-      }
-    )
+      )
+    rescue => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     Payment.create(
       mandate_id: mandate['id'],
@@ -177,7 +181,11 @@ class CustomersController < ApplicationController
       environment: :sandbox
     )
 
-    records = @client.payments.list(params: { customer: customer['gocardless_customer_id']  }).records
+    begin
+      records = @client.payments.list(params: { customer: customer['gocardless_customer_id']  }).records
+    rescue => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     payments = []
     records.each do |record|
@@ -219,7 +227,11 @@ class CustomersController < ApplicationController
       environment: :sandbox
     )
 
-    records = @client.subscriptions.list(params: { customer: customer['gocardless_customer_id']  }).records
+    begin
+      records = @client.subscriptions.list(params: { customer: customer['gocardless_customer_id']  }).records
+    rescue => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     subscriptions = []
     records.each do |record|
@@ -274,25 +286,29 @@ class CustomersController < ApplicationController
     )
 
     invoice_number = rand.to_s[2..10]
-    subscription = client.subscriptions.create(
-      params: {
-        amount: json['amount'], # 15 GBP in pence, collected from the customer
-        app_fee: 10, # 10 pence, to be paid out to you
-        currency: 'GBP',
-        interval_unit: json['frequency'],
-        day_of_month: json['day_of_month'],
-        links: {
-          mandate: mandate.mandate
-          # Mandate ID from the last section
+    begin
+      subscription = client.subscriptions.create(
+        params: {
+          amount: json['amount'], # 15 GBP in pence, collected from the customer
+          app_fee: 10, # 10 pence, to be paid out to you
+          currency: 'GBP',
+          interval_unit: json['frequency'],
+          day_of_month: json['day_of_month'],
+          links: {
+            mandate: mandate.mandate
+            # Mandate ID from the last section
+          },
+          metadata: {
+            subscription_number: invoice_number
+          }
         },
-        metadata: {
-          subscription_number: invoice_number
+        headers: {
+          'Idempotency-Key' => rand(36**32).to_s(36)
         }
-      },
-      headers: {
-        'Idempotency-Key' => rand(36**32).to_s(36)
-      }
-    )
+      )
+    rescue => e
+      render json: {'message' => e.message}.to_json, :status => :bad_request and return
+    end
 
     Payment.create(
       mandate_id: mandate['id'],
