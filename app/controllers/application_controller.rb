@@ -3,7 +3,6 @@ class ApplicationController < ActionController::Base
 
   def current_user
     @authorization = request.headers["Authorization"]
-    @authorization = request.headers["Authorization"]
     session = Session.find_by(session_id: @authorization)
     if (!session.nil?)
       User.find_by(id: session.user_id)

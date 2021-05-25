@@ -34,6 +34,8 @@ gem 'json-schema'
 
 gem 'rack-cors'
 
+gem 'bundle'
+
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 

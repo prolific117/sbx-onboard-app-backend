@@ -4,10 +4,10 @@ require "active_support/core_ext/integer/time"
 # test suite. You never need to work with it otherwise. Remember that
 # your test database is "scratch space" for the test suite and is wiped
 # and recreated between test runs. Don't rely on the data there!
+Rails.application.routes.default_url_options[:host] = 'http://localhost:3000'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
-
   config.cache_classes = false
   config.action_view.cache_template_loading = true
 
@@ -21,6 +21,13 @@ Rails.application.configure do
   config.public_file_server.headers = {
     'Cache-Control' => "public, max-age=#{1.hour.to_i}"
   }
+
+  config.middleware.insert_before 0, Rack::Cors do
+    allow do
+      origins '*'
+      resource '*', :headers => 'Authorization', :methods => [:get, :post, :delete, :patch, :options]
+    end
+  end
 
   # Show full error reports and disable caching.
   config.consider_all_requests_local       = true

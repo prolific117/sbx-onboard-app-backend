@@ -2,8 +2,8 @@
 
 one:
   session_id: MyString
-  customer_id: 1
+  user_id: 1
 
 two:
   session_id: MyString
-  customer_id: 1
+  user_id: 1

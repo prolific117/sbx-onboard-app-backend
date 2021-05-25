@@ -67,6 +67,8 @@ GEM
     bootsnap (1.7.5)
       msgpack (~> 1.0)
     builder (3.2.4)
+    bundle (0.0.1)
+      bundler
     byebug (11.1.3)
     capybara (3.35.3)
       addressable
@@ -233,6 +235,7 @@ PLATFORMS
 DEPENDENCIES
   bcrypt
   bootsnap (>= 1.4.4)
+  bundle
   byebug
   capybara (>= 3.26)
   envyable
