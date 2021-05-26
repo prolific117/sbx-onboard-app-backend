@@ -353,4 +353,15 @@ class CustomersController < ApplicationController
 
     render json: customers, status: :ok
   end
+
+  def getCustomer
+    account = current_user
+    customer = Customer.find_by(id: params['customer_id'])
+    if(customer.nil? || account.id != customer.account_id)
+      output = {'message' => 'Customer does not exist'}.to_json
+      render json: output, :status => :accepted and return
+    end
+
+    render json: customer, status: :ok
+  end
 end

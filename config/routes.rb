@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   post "/customer", to: "customers#create"
   get "/customers", to: "customers#get"
+  get "/customer/:customer_id", to: "customers#getCustomer"
   get "/cors", to: "gocardless#get"
   post "/login", to: "users#login"
   post '/user', to: 'users#signup'
