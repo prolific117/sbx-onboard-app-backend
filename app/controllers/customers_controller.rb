@@ -377,7 +377,7 @@ class CustomersController < ApplicationController
       'address_line' => address.address_line,
       'city' => address.city,
       'postal_code' => address.postal_code,
-      'creat_date' => customer.created_at
+      'create_date' => customer.created_at
     }.to_json
 
     render json: output, status: :ok
