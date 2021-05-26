@@ -66,10 +66,7 @@ class GocardlessController < ApplicationController
   end
 
   def connect()
-    output = {'organisation_id' => access_token['organisation_id']}.to_json
-    render json: output and return
     account = current_user
-
     oauth = getClient()
 
     begin

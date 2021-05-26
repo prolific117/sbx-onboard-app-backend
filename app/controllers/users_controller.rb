@@ -32,7 +32,6 @@ class UsersController < ApplicationController
       user_id: user.id
     );
 
-
     output = {'session_id' => sessionId}.to_json
     render json: output
   end
@@ -85,8 +84,8 @@ class UsersController < ApplicationController
       "type" => "object",
       "required" => %w[email password],
       "properties" => {
-        "email" => {"type" => "string"},
-        "password" => {"type" => "string"}
+        "email" => {"type" => ["string", "not_null"]},
+        "password" => {"type" => ["string", "not_null"]}
       }
     }
   end
