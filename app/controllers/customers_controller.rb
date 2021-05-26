@@ -196,6 +196,7 @@ class CustomersController < ApplicationController
                       'amount_refunded' => record.amount_refunded,
                       'charge_date' => record.charge_date,
                       'currency' => record.currency,
+                      'status' => record.status,
                       'invoice_number' => record.metadata['invoice_number']
                     }
       )
