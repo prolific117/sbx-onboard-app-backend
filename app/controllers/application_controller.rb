@@ -30,7 +30,7 @@ class ApplicationController < ActionController::Base
   end
 
   def canPerformGCOperations(account)
-    if(!isAuthorized(account) or !isVerified(account) or !getCurrentVerificationStatus())
+    if(!isAuthorized(account) or (!isVerified(account) && !getCurrentVerificationStatus()) )
       return false
     end
 
