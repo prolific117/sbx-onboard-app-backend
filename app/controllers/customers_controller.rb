@@ -98,22 +98,23 @@ class CustomersController < ApplicationController
     end
 
     account = current_user
-    customer = Customer.find_by(id: params['customer_id'])
+    mandate = Mandate.where('mandate = ?', params['mandate_id']).first
+    if(mandate.nil?)
+      output = {'message' => 'No mandates exist for customer'}.to_json
+      render json: output, :status => :not_found and return
+    end
 
+    customer = Customer.find_by(id: mandate['customer_id'])
     permission = checkPermission(account, customer)
-    if(!permission['canProceed'])
+    #render json: {'message' => permission[:canProceed]}.to_json, :status => :bad_request and return
+
+    if(!permission[:canProceed])
       render json: permission[:reason], :status => permission[:status] and return
     end
 
     if(json['amount'] < 200)
       output = {'message' => 'Minimum amount is 200 pence'}.to_json
       render json: output, :status => :bad_request and return
-    end
-
-    mandate = Mandate.where('customer_id = ?', customer['id']).first
-    if(mandate.nil?)
-      output = {'message' => 'No mandates exist for customer'}.to_json
-      render json: output, :status => :not_found and return
     end
 
     client = GoCardlessPro::Client.new(
@@ -262,22 +263,24 @@ class CustomersController < ApplicationController
     end
 
     account = current_user
-
-    if(json['amount'] < 200)
-      output = {'message' => 'Minimum amount is 200 pence'}.to_json
-      render json: output, :status => :bad_request and return
+    mandate = Mandate.where('mandate = ?', params['mandate_id']).first
+    if(mandate.nil?)
+      output = {'message' => 'No mandates exist for customer'}.to_json
+      render json: output, :status => :not_found and return
     end
 
-    customer = Customer.find_by(id: params['customer_id'])
+    customer = Customer.find_by(id: mandate['customer_id'])
+
     permission = checkPermission(account, customer)
+
     if(!permission[:canProceed])
       render json: permission[:reason], :status => permission[:status] and return
     end
 
-    mandate = Mandate.where('customer_id = ?', customer['id']).first
-    if(mandate.nil?)
-      output = {'message' => 'No mandates exist for customer'}.to_json
-      render json: output, :status => :not_found and return
+
+    if(json['amount'] < 200)
+      output = {'message' => 'Minimum amount is 200 pence'}.to_json
+      render json: output, :status => :bad_request and return
     end
 
     client = GoCardlessPro::Client.new(
