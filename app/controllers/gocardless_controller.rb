@@ -35,7 +35,7 @@ class GocardlessController < ApplicationController
   def authorize(mode)
     account = current_user
     if(isAuthorized(account))
-      output = {'message' => 'Account is already authorized'}.to_json
+      output = {'message' => 'Account is already authorized with gocardless'}.to_json
       render json: output, :status => :bad_request and return
     end
 
