@@ -360,11 +360,24 @@ class CustomersController < ApplicationController
   def getCustomer
     account = current_user
     customer = Customer.find_by(id: params['customer_id'])
+    address = Address.where('customer_id = ?', customer['id']).first
+
     if(customer.nil? || account.id != customer.account_id)
       output = {'message' => 'Customer does not exist'}.to_json
       render json: output, :status => :accepted and return
     end
 
-    render json: customer, status: :ok
+    output = {
+      'id' => customer.id,
+      'email' => customer.email,
+      'last_name' => customer.last_name,
+      'first_name' => customer.first_name,
+      'phone' => customer.phone,
+      'address_line' => address.address_line,
+      'city' => address.city,
+      'postal_code' => address.postal_code
+    }.to_json
+
+    render json: output, status: :ok
   end
 end
