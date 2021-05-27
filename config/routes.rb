@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   post "/login", to: "users#login"
   post '/user', to: 'users#signup'
   post '/customer/single-payment/:mandate_id', to: 'customers#collectOneOffPayment'
-  post '/customer/recurring-payment/:mandate', to: 'customers#collectRecurringPayment'
+  post '/customer/recurring-payment/:mandate_id', to: 'customers#collectRecurringPayment'
   get 'authorized', to: 'sessions#page_requires_login'
   get "/gocardless/authorize/signup", to: "gocardless#gcSignup"
   get "/gocardless/authorize/login", to: "gocardless#gcLogin"
