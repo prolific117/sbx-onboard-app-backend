@@ -193,6 +193,7 @@ class CustomersController < ApplicationController
       payments.push({
                       'amount' => record.amount,
                       'created_at' => record.created_at,
+                      'mandate' => record.links.mandate,
                       'amount_refunded' => record.amount_refunded,
                       'charge_date' => record.charge_date,
                       'currency' => record.currency,
@@ -202,7 +203,7 @@ class CustomersController < ApplicationController
       )
     end
 
-    render json: records and return
+    render json: payments and return
   end
 
   def getCustomerSubscriptions
