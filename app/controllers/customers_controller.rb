@@ -239,17 +239,21 @@ class CustomersController < ApplicationController
     records.each do |record|
       subscriptions.push({
                       'amount' => record.amount,
+                      'id' => record.id,
+                      'interval' => record.interval_unit,
+                      'status' => record.status,
                       'created_at' => record.created_at,
                       'start_date' => record.start_date,
                       'end_date' => record.end_date,
                       'currency' => record.currency,
+                      'mandate' => record.links['mandate'],
                       'invoice_number' => record.metadata['invoice_number'],
                       'upcoming_payments' => record.upcoming_payments
                     }
       )
     end
 
-    render json: records and return
+    render json: subscriptions and return
   end
 
   def collectRecurringPayment
