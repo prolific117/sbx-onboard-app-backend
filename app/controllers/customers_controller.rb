@@ -249,7 +249,7 @@ class CustomersController < ApplicationController
       )
     end
 
-    render json: subscriptions and return
+    render json: records and return
   end
 
   def collectRecurringPayment
