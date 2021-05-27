@@ -246,8 +246,8 @@ class CustomersController < ApplicationController
                       'start_date' => record.start_date,
                       'end_date' => record.end_date,
                       'currency' => record.currency,
-                      'mandate' => record.links['mandate'],
-                      'subscription_number' => record.metadata['subscription_number'],
+                      'mandate' => record.links.mandate,
+                      'subscription_number' => record.metadata.subscription_number,
                       'upcoming_payments' => record.upcoming_payments
                     }
       )
