@@ -200,7 +200,7 @@ class GocardlessController < ApplicationController
         params: {
           description: "Automatic invoice payments to #{customer['company_name']}",
           session_token: sessionToken,
-          success_redirect_url: "http://localhost:5000/mandate?user_id=#{customer['id']}",
+          success_redirect_url: "http://localhost:3000/mandate?user_id=#{customer['id']}",
           prefilled_customer: {
             given_name: customer.first_name,
             family_name: customer.last_name,
