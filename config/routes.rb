@@ -17,6 +17,7 @@ Rails.application.routes.draw do
   get "/gocardless/mandates/:customer_id", to: "gocardless#getMandatesForCustomer"
   get "/gocardless/payments/:customer_id", to: "customers#getCustomerPayments"
   get "/gocardless/subscriptions/:customer_id", to: "customers#getCustomerSubscriptions"
+  # post "/gocardless/webhooks", to: "gocardless#completeGocardlessMandate"
   # match '/user' => 'gocardless#connect', via: :get
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 end
